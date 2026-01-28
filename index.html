@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferry's Cutting Phase - Training & Nutrition Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #0f172a;
+            --secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-light: #60a5fa;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card-bg: rgba(30, 41, 59, 0.8);
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-20px, -20px) scale(1.1); }
+        }
+        
+        /* Header */
+        header {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        
+        .tagline {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        /* Navigation */
+        .main-nav {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+        
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Section Headers */
+        .section-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        /* Content Sections */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Workout Cards */
+        .workout-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .exercise-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .exercise-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), #8b5cf6);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        
+        .exercise-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .exercise-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .exercise-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+            flex: 1;
+            margin-right: 1rem;
+        }
+        
+        .exercise-video {
+            width: 36px;
+            height: 36px;
+            background: rgba(239, 68, 68, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ef4444;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .exercise-video:hover {
+            background: rgba(239, 68, 68, 0.4);
+            transform: scale(1.1);
+        }
+        
+        .exercise-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent-light);
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+        
+        .exercise-notes {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-style: italic;
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+        }
+        
+        .sets-badge {
+            display: inline-flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .set-badge {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Meal Sections */
+        .meal-category {
+            margin-bottom: 3rem;
+        }
+        
+        .meal-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .meal-type {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-light);
+        }
+        
+        .meal-calories {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        
+        .meals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+        
+        .meal-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .meal-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--success);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+        }
+        
+        .meal-card.selected {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .meal-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .meal-name {
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+            font-size: 1rem;
+        }
+        
+        .meal-ingredients {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        
+        .ingredient {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .ingredient:last-child {
+            border-bottom: none;
+        }
+        
+        .ingredient-name {
+            color: var(--text-muted);
+        }
+        
+        .ingredient-amount {
+            color: var(--text);
+            font-weight: 600;
+        }
+        
+        /* Dashboard Stats */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-card-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-light);
+        }
+        
+        .stat-card-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .workout-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .exercise-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Loading Animation */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--primary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <header>
+        <div class="header-content">
+            <div>
+                <h1>🔥 Ferry's Cutting Phase</h1>
+                <div class="tagline">Training & Nutrition Protocol</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Target Macros (Training Day)</div>
+                <div style="font-weight: 700; color: var(--success);">P: 175g | C: 325g | F: 65g</div>
+            </div>
+        </div>
+        
+        <div class="container" style="padding-top: 1rem; padding-bottom: 0;">
+            <nav class="main-nav">
+                <button class="nav-btn active" onclick="showSection('tuesday')">Tuesday</button>
+                <button class="nav-btn" onclick="showSection('wednesday')">Wednesday</button>
+                <button class="nav-btn" onclick="showSection('friday')">Friday</button>
+                <button class="nav-btn" onclick="showSection('saturday')">Saturday</button>
+                <button class="nav-btn" onclick="showSection('nutrition')">Nutrition</button>
+            </nav>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Tuesday Workout -->
+        <div id="tuesday" class="content-section active">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <div class="section-icon">💪</div>
+                    Tuesday: Push/Pull Upper
+                </h2>
+            </div>
+            <div class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-card-value">7</div>
+                    <div class="stat-card-label">Exercises</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">3</div>
+                    <div class="stat-card-label">Chest Focus</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">2</div>
+                    <div class="stat-card-label">Back Focus</div>
+                </div>
+            </div>
+            <div class="workout-grid" id="tuesday-exercises"></div>
+        </div>
+        
+        <!-- Wednesday Workout -->
+        <div id="wednesday" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <div class="section-icon">🦵</div>
+                    Wednesday: Legs Focus
+                </h2>
+            </div>
+            <div class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-card-value">5</div>
+                    <div class="stat-card-label">Exercises</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">3</div>
+                    <div class="stat-card-label">Quad Focus</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">2</div>
+                    <div class="stat-card-label">Hamstring Focus</div>
+                </div>
+            </div>
+            <div class="workout-grid" id="wednesday-exercises"></div>
+        </div>
+        
+        <!-- Friday Workout -->
+        <div id="friday" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <div class="section-icon">🏋️</div>
+                    Friday: Hypertrophy Focus
+                </h2>
+            </div>
+            <div class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-card-value">7</div>
+                    <div class="stat-card-label">Exercises</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">2</div>
+                    <div class="stat-card-label">Back Variations</div>
+                </div>
+            </div>
+            <div class="workout-grid" id="friday-exercises"></div>
+        </div>
+        
+        <!-- Saturday Workout -->
+        <div id="saturday" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <div class="section-icon">🎯</div>
+                    Saturday: Posterior Chain
+                </h2>
+            </div>
+            <div class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-card-value">5</div>
+                    <div class="stat-card-label">Exercises</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">2</div>
+                    <div class="stat-card-label">Hamstring Focus</div>
+                </div>
+            </div>
+            <div class="workout-grid" id="saturday-exercises"></div>
+        </div>
+        
+        <!-- Nutrition -->
+        <div id="nutrition" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <div class="section-icon">🥗</div>
+                    Nutrition Protocol
+                </h2>
+            </div>
+            
+            <div class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-card-value">2,585</div>
+                    <div class="stat-card-label">Training Day Kcal</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">2,185</div>
+                    <div class="stat-card-label">Rest Day Kcal</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">~18.6</div>
+                    <div class="stat-card-label">Kcal/lb LBM</div>
+                </div>
+            </div>
+            
+            <div id="meals-container"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Workout Data
+        const workouts = {
+            tuesday: [
+                {
+                    name: "Smith Machine 45° Incline Chest Press",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "10-15", type: "backoff" }
+                    ],
+                    tempo: "3011",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Keep shoulders down and back 'break the bar' to activate the lats. Lower the bar to upper chest with elbows at 45°. Control transition from eccentric to concentric, flex inside of elbows hard into midline.",
+                    video: "https://www.youtube.com/watch?v=EeLLZMdg6zI"
+                },
+                {
+                    name: "BB Bent Over Row",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "8-10", type: "working" }
+                    ],
+                    tempo: "3011",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Shoulder width pronated grip. Push hips back with slight knee flexion. Row barbell towards belly button keeping elbows tucked.",
+                    video: "https://www.youtube.com/watch?v=pnCwVQMimps"
+                },
+                {
+                    name: "Machine Shoulder Press",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "8-10", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Grip just outside shoulder width. Keep core braced, avoid lower back extension. Lower handles to ear height, push insides of elbows into sides of head when pushing up.",
+                    video: "https://www.youtube.com/watch?v=7ijGii2c02o"
+                },
+                {
+                    name: "Lat Pulldown",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "10-15", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Overhand grip at shoulder width, slight lean back. Pull elbows down into base of spine to bias teres major/minor and upper back.",
+                    video: "https://www.youtube.com/watch?v=D2x5ncSf3o0"
+                },
+                {
+                    name: "Pec Deck Flyes",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "10-15", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Neutral grip, keep chest up and shoulders down. Bring insides of elbows into midline of chest, bury biceps into chest. Drive blood into pecs with quality contractions.",
+                    video: "https://www.youtube.com/watch?v=XjD5ee9sOhM"
+                },
+                {
+                    name: "Cross Cable Tricep Extensions",
+                    sets: [
+                        { reps: "8-10", type: "working" },
+                        { reps: "15-20", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Set cables on highest setting, grab cross body. Keep shoulders locked back and push cables down and out.",
+                    video: "https://www.youtube.com/watch?v=TctfJadtxq0"
+                },
+                {
+                    name: "Single Arm Preacher Curl Machine",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "8-10", type: "backoff" }
+                    ],
+                    tempo: "3011",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Sit sideways so shoulder, elbow and wrist form 1 straight line. Keep upper arm pushed into padding throughout full movement.",
+                    video: "https://www.youtube.com/watch?v=ysxciKlyBso"
+                }
+            ],
+            wednesday: [
+                {
+                    name: "Hack Squat",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "10-15", type: "backoff" }
+                    ],
+                    tempo: "3011",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Test foot placement to find spot where you can go all the way down without heels coming off platform. Lock that in. Keep ribcage down and core engaged. Maximum knee flexion to bias quads.",
+                    video: "https://www.youtube.com/watch?v=Mtz2Ut1p_Iw"
+                },
+                {
+                    name: "Stiff Leg Deadlift",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "8-10", type: "working" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Max stretch of hamstrings by keeping legs just shy of locked out. Brace with chin tucked, ribcage down, 'breaking the bar' to activate lats. Drive hips forward into bar to come up, don't over extend back.",
+                    video: "https://www.youtube.com/watch?v=VwMsYE0ErwQ"
+                },
+                {
+                    name: "Horizontal Leg Press",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "8-10", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Test foot placement for full depth without heels lifting. Keep ribcage down, core engaged. Maximum knee flexion to bias quads.",
+                    video: "https://www.youtube.com/watch?v=7x3-2Gv5-p8"
+                },
+                {
+                    name: "Seated Leg Curl (Single Leg)",
+                    sets: [
+                        { reps: "10-15", type: "working" }
+                    ],
+                    tempo: "3010",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Keep hips locked into seat, press support pad down tight, ribcage down and core braced. Push quads up into support pad during concentric. Point toes forward, squeeze ankle pad completely under seat for full ROM.",
+                    video: "https://www.youtube.com/watch?v=fDoVmFnnOE0"
+                },
+                {
+                    name: "Standing Calf Raises",
+                    sets: [
+                        { reps: "15-20", type: "working" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Complete calf development with full stretch at bottom and peak contraction at top. Use full range of motion.",
+                    video: null
+                }
+            ],
+            friday: [
+                {
+                    name: "DB Flat Chest Press",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "8-10", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Shoulders down and back, slightly externally rotate arms (semi-pronated). 'Break the bar' to activate lats. Lower till upper arm parallel to body at 45° angle. Control transition, flex inside elbows hard into midline.",
+                    video: "https://www.youtube.com/watch?v=MVWlBGha2Qw"
+                },
+                {
+                    name: "Single Arm Chest Supported Machine Row",
+                    sets: [
+                        { reps: "8-10", type: "working" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Neutral grip, place working side leg forwards to brace. Focus on rowing elbow in towards side of body squeezing the lats.",
+                    video: null
+                },
+                {
+                    name: "Machine Side Raises",
+                    sets: [
+                        { reps: "8-10", type: "working" },
+                        { reps: "12-15", type: "backoff" }
+                    ],
+                    tempo: "3011",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Keep arms extended, contact point at elbows. Imagine pushing elbows out to sides before pulling up. Make fist and squeeze. Rotate pinky upwards 'as if emptying cup of coffee', don't let thumbs rotate up.",
+                    video: "https://www.youtube.com/watch?v=xCDtgoRBQYY"
+                },
+                {
+                    name: "T-Bar Row",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "10-15", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Upper back focus. Row elbows out in 45° angle from torso. Allow some protraction at shoulder in eccentric. When rowing up, bring thoracic spine into slight extension.",
+                    video: "https://www.youtube.com/watch?v=5foJiIVhs8Q"
+                },
+                {
+                    name: "Pec Deck Flyes",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "10-15", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Neutral grip, keep chest up and shoulders down. Bring insides of elbows into midline of chest, bury biceps into chest. Focus on driving blood into pecs.",
+                    video: "https://www.youtube.com/watch?v=XjD5ee9sOhM"
+                },
+                {
+                    name: "Dual Rope Overhead Tricep Extension",
+                    sets: [
+                        { reps: "8-10", type: "working" },
+                        { reps: "15-20", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "To Failure",
+                    rest: "As needed",
+                    notes: "Attach 2 short ropes making 1 'long rope'. Set pulley just below shoulder height, face away from cable stack. Extend forward and overhead.",
+                    video: "https://www.youtube.com/watch?v=YjrQvsvwNoY"
+                },
+                {
+                    name: "Rope Hammer Curls",
+                    sets: [
+                        { reps: "4-6", type: "working" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Neutral grip focus.",
+                    video: "https://www.youtube.com/watch?v=_tg_GRzZiO4"
+                }
+            ],
+            saturday: [
+                {
+                    name: "Lying Leg Curl",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "10-15", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Keep hips locked into padding, toes pointed up. Bring ankle pad all the way till glutes, lower till almost lock out knees.",
+                    video: "https://www.youtube.com/watch?v=bvs-Y_qgghE"
+                },
+                {
+                    name: "BB Back Squat",
+                    sets: [
+                        { reps: "8-10", type: "working" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Stance slightly wider than shoulder width. Pull bar firmly down into traps to activate lats and brace torso. Keep ribcage down, brace hard through core. Fold down by pushing hips down towards floor and knees forward. Track knees over 2nd and 3rd toes.",
+                    video: "https://www.youtube.com/watch?v=Uv_DKDl7EjA"
+                },
+                {
+                    name: "BB Hip Thrust",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "10-15", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Foot placement where you have 90° angle of knee flexion. Keep chin tucked and ribcage braced down. Push up by driving hips into bar squeezing glutes.",
+                    video: "https://www.youtube.com/watch?v=rpp8W5_VoF8"
+                },
+                {
+                    name: "Single Leg Leg Extensions",
+                    sets: [
+                        { reps: "4-6", type: "working" },
+                        { reps: "10-15", type: "backoff" }
+                    ],
+                    tempo: "3110",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "Lock hips into seat, pull yourself firmly down (use straps for better lock in). Pull toes up, sit upright in 90° hip flexion. Contraction from VMO (teardrop) to Rectus femoris (hip flexor).",
+                    video: null
+                },
+                {
+                    name: "Seated Calf Raises",
+                    sets: [
+                        { reps: "10-15", type: "working" }
+                    ],
+                    tempo: "3111",
+                    rir: "1RIR to Failure",
+                    rest: "As needed",
+                    notes: "2 SECONDS HOLD IN THE STRETCH - THEN PUSH ALL THE WAY UP ON YOUR TOES",
+                    video: "https://www.youtube.com/watch?v=xn6knfp_fLo"
+                }
+            ]
+        };
+        
+        // Nutrition Data
+        const meals = {
+            breakfast: {
+                calories: 475,
+                icon: "🌅",
+                options: [
+                    { name: "Quark Power Bowl", ingredients: { "Quark": "200g", "Banana": "100g", "Peanut Butter": "20g", "Oats": "40g" }, instructions: null },
+                    { name: "Oatmeal Berry Crunch", ingredients: { "Oats": "50g", "Whey": "30g", "Raspberries": "50g", "Almonds": "20g" }, instructions: null },
+                    { name: "Avocado Toast Protein", ingredients: { "Eggs": "2", "Egg Whites": "150g", "Toast": "60g", "Avocado": "30g" }, instructions: null },
+                    { name: "Greek Yogurt Parfait", ingredients: { "Yogurt": "200g", "Blueberries": "50g", "Granola": "40g", "Peanut Butter": "20g" }, instructions: null },
+                    { name: "Scrambled Oats", ingredients: { "Eggs": "3", "Oats": "40g", "Banana": "100g", "Peanut Butter": "15g" }, instructions: "Non-training day option" },
+                    { name: "Banana Bread PRO", ingredients: { "Oat flour": "240g", "Banana": "300g", "Egg Whites": "350g" }, instructions: "Bake 45 min at 170°C" }
+                ]
+            },
+            preworkout: {
+                calories: 425,
+                icon: "⚡",
+                options: [
+                    { name: "Pre-Workout Yogurt", ingredients: { "Yogurt": "150g", "Whey": "30g", "Banana": "100g", "Peanut Butter": "20g" }, instructions: null },
+                    { name: "Oatmeal Energy", ingredients: { "Oats": "50g", "Whey": "30g", "Almonds": "20g", "Blueberries": "40g" }, instructions: null },
+                    { name: "Turkey Toast", ingredients: { "Toast": "60g", "Turkey": "100g", "Peanut Butter": "15g" }, instructions: null },
+                    { name: "Plátano Shake", ingredients: { "Banana": "150g", "Whey Chocolate": "45g", "Peanut Butter": "5g" }, instructions: "Blend with water/milk" },
+                    { name: "Overnight Oats", ingredients: { "Oats": "60g", "Whey Chocolate": "40g", "Banana": "100g" }, instructions: "Mix and refrigerate 4-8h" }
+                ]
+            },
+            postworkout: {
+                calories: 575,
+                icon: "🍽️",
+                options: [
+                    { name: "Turkey & Cottage Toast", ingredients: { "Toast": "60g", "Turkey": "120g", "Cottage": "80g" }, instructions: null },
+                    { name: "Salmon Rice Bowl", ingredients: { "Rice": "80g", "Salmon": "130g", "Feta": "35g" }, instructions: null },
+                    { name: "Tuna Pasta", ingredients: { "Pasta": "85g", "Tuna": "130g", "Avocado": "30g" }, instructions: null },
+                    { name: "Arroz con Leche Fit", ingredients: { "Raw Rice": "75g", "Whey Chocolate": "45g", "Peanut Butter": "12g" }, instructions: "Cook rice pudding, add whey" },
+                    { name: "Chocolate Mousse", ingredients: { "Greek Yogurt 0%": "250g", "Whey Chocolate": "40g", "Chocolate 85%": "15g" }, instructions: "Blend and chill" }
+                ]
+            },
+            lunch: {
+                calories: "~555-590",
+                icon: "🍱",
+                options: [
+                    { name: "Mediterranean Chicken", ingredients: { "Rice": "60-80g", "Chicken": "150g", "Feta": "35g", "Veggies": "150g" }, instructions: null },
+                    { name: "Salmon Pasta", ingredients: { "Pasta": "65-85g", "Salmon": "120g", "Avocado": "35g" }, instructions: null },
+                    { name: "Spanish Style", ingredients: { "Rice": "75g", "Chicken": "150g", "Olive Oil": "10g" }, instructions: "Arroz con pollo" },
+                    { name: "Recovery Wrap", ingredients: { "Tortilla": "60g", "Chicken": "130g", "Avocado": "15g" }, instructions: "Add 150g vegetables" }
+                ]
+            },
+            nonTraining: {
+                calories: 495,
+                icon: "🌙",
+                options: [
+                    { name: "Quark Berry Bowl", ingredients: { "Quark": "200g", "Oats": "40g", "Blueberries": "50g", "Almonds": "20g" }, instructions: "Meal 5 on rest days" },
+                    { name: "Yogurt Crunch", ingredients: { "Yogurt": "200g", "Granola": "40g", "Raspberries": "50g" }, instructions: null },
+                    { name: "Apple Cinnamon", ingredients: { "Quark": "200g", "Apple": "100g", "Almonds": "20g", "Oats": "40g" }, instructions: null }
+                ]
+            }
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderWorkouts();
+            renderMeals();
+        });
+        
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Remove active class from buttons
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(section).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function renderWorkouts() {
+            Object.keys(workouts).forEach(day => {
+                const container = document.getElementById(day + '-exercises');
+                if (!container) return;
+                
+                workouts[day].forEach((exercise, index) => {
+                    const card = createExerciseCard(exercise, index + 1);
+                    container.appendChild(card);
+                });
+            });
+        }
+        
+        function createExerciseCard(exercise, number) {
+            const div = document.createElement('div');
+            div.className = 'exercise-card';
+            
+            const setBadges = exercise.sets.map((set, i) => 
+                `<span class="set-badge" title="${set.type === 'working' ? 'Working Set' : 'Back-off Set'}">Set ${i + 1}: ${set.reps} reps</span>`
+            ).join('');
+            
+            const videoLink = exercise.video ? 
+                `<a href="${exercise.video}" target="_blank" class="exercise-video" title="Watch Video Tutorial">▶</a>` : '';
+            
+            div.innerHTML = `
+                <div class="exercise-header">
+                    <div class="exercise-name">#${number} ${exercise.name}</div>
+                    ${videoLink}
+                </div>
+                <div class="exercise-stats">
+                    <div class="stat">
+                        <span class="stat-value">${exercise.sets.length}</span>
+                        <span class="stat-label">Sets</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">${exercise.tempo}</span>
+                        <span class="stat-label">Tempo</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">${exercise.rest}</span>
+                        <span class="stat-label">Rest</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">${exercise.rir}</span>
+                        <span class="stat-label">RIR</span>
+                    </div>
+                </div>
+                <div class="exercise-notes">${exercise.notes}</div>
+                <div class="sets-badge">${setBadges}</div>
+            `;
+            
+            return div;
+        }
+        
+        function renderMeals() {
+            const container = document.getElementById('meals-container');
+            
+            Object.keys(meals).forEach(key => {
+                const category = meals[key];
+                const section = document.createElement('div');
+                section.className = 'meal-category';
+                
+                const nameMap = {
+                    breakfast: 'Breakfast (475 kcal)',
+                    preworkout: 'Pre-Workout (425 kcal)',
+                    postworkout: 'Post-Workout (575 kcal)',
+                    lunch: 'Lunch & Dinner (555-590 kcal)',
+                    nonTraining: 'Meal 5 - Non Training (495 kcal)'
+                };
+                
+                section.innerHTML = `
+                    <div class="meal-header">
+                        <span style="font-size: 1.5rem;">${category.icon}</span>
+                        <span class="meal-type">${nameMap[key]}</span>
+                    </div>
+                    <div class="meals-grid" id="meals-${key}"></div>
+                `;
+                
+                container.appendChild(section);
+                
+                const grid = section.querySelector('.meals-grid');
+                category.options.forEach((meal, idx) => {
+                    const card = createMealCard(meal, key, idx);
+                    grid.appendChild(card);
+                });
+            });
+        }
+        
+        function createMealCard(meal, category, index) {
+            const div = document.createElement('div');
+            div.className = 'meal-card';
+            div.onclick = () => toggleMeal(div);
+            
+            const ingredientsList = Object.entries(meal.ingredients)
+                .map(([name, amount]) => 
+                    `<div class="ingredient">
+                        <span class="ingredient-name">${name}</span>
+                        <span class="ingredient-amount">${amount}</span>
+                    </div>`
+                ).join('');
+            
+            const instructions = meal.instructions ? 
+                `<div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.8rem; color: var(--warning);">
+                    <strong>Note:</strong> ${meal.instructions}
+                </div>` : '';
+            
+            div.innerHTML = `
+                <div class="meal-name">${meal.name}</div>
+                <div class="meal-ingredients">
+                    ${ingredientsList}
+                    ${instructions}
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        function toggleMeal(element) {
+            element.classList.toggle('selected');
+        }
+    </script>
+</body>
+</html>
